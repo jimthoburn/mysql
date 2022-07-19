@@ -1,10 +1,11 @@
-# You can change this to a newer version of MySQL available at
-# https://hub.docker.com/r/mysql/mysql-server/tags/
-FROM mysql/mysql-server:8.0.17
+FROM amazon/aws-cli:latest
 
-RUN mkdir -p /var/lib/mysql/backups
+RUN yum update -y \
+    && yum install -y gzip
 
-CMD mysqldump -h "$MYSQL_HOST" -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" \
-    --single-transaction \
-    --result-file=/var/lib/mysql/backups/backup.$(date +%F.%T).sql \
-    --all-databases
+WORKDIR /scripts
+COPY install-mysqldump.sh .
+RUN "/scripts/install-mysqldump.sh"
+
+COPY backup.sh .
+ENTRYPOINT [ "/scripts/backup.sh" ]
